@@ -55,7 +55,8 @@ Expected fields:
 {
   "ca_pem": "-----BEGIN CERTIFICATE-----...",
   "client_cert_pem": "-----BEGIN CERTIFICATE-----...",
-  "client_key_pem": "-----BEGIN PRIVATE KEY-----..."
+  "client_key_pem": "-----BEGIN PRIVATE KEY-----...",
+  "tcp_url": "tcp.wafio.cloud:9443"
 }
 ```
 
@@ -67,9 +68,7 @@ Expected fields:
 use Wafio\Client\WafioClient;
 
 $client = new WafioClient([
-    'host' => 'localhost',
-    'port' => 9089,
-    'credentials' => __DIR__ . '/mtls-credentials.json',
+  'credentials' => __DIR__ . '/mtls-credentials.json', // tcp_url dipakai otomatis
 ]);
 
 $result = $client->analyze([
@@ -175,20 +174,18 @@ Client IP resolution order:
 
 ```php
 $client = new WafioClient([
-    'host' => 'localhost',
-    'port' => 9089,
     'credentials' => '/path/to/mtls-credentials.json',
 ]);
 ```
 
 Required option:
 
-- `credentials`: file path or PEM array containing `client_cert_pem`, `client_key_pem`, `ca_pem`
+- `credentials`: file path or PEM array containing `client_cert_pem`, `client_key_pem`, `ca_pem` (optional `tcp_url`)
 
 Optional options:
 
-- `host` (default: `localhost`)
-- `port` (default: `9089`)
+- `host` (optional override; default from `tcp_url` if available, else `localhost`)
+- `port` (optional override; default from `tcp_url` if available, else `9089`)
 
 Built-in behavior values:
 

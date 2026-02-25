@@ -43,8 +43,8 @@ return [
             }
             return $p;
         })(),
-        'host' => env('WAFIO_HOST', 'localhost'),
-        'port' => env('WAFIO_PORT', 9089),
+        'host' => env('WAFIO_HOST'),
+        'port' => env('WAFIO_PORT'),
     ],
 
 ];

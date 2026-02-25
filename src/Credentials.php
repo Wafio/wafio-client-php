@@ -14,7 +14,7 @@ final class Credentials
      * Load credentials from JSON file (client_cert_pem, client_key_pem, ca_pem).
      *
      * @param string $filePath Path to mtls-credentials.json
-     * @return array{client_cert_pem: string, client_key_pem: string, ca_pem: string}
+        * @return array{client_cert_pem: string, client_key_pem: string, ca_pem: string, tcp_url?: string}
      */
     public static function loadFromFile(string $filePath): array
     {
@@ -32,11 +32,15 @@ final class Credentials
         if (empty($data['ca_pem'])) {
             throw new \RuntimeException('JSON file must contain ca_pem');
         }
-        return [
+        $out = [
             'client_cert_pem' => self::normalizePem((string) $data['client_cert_pem']),
             'client_key_pem'  => self::normalizePem((string) $data['client_key_pem']),
             'ca_pem'          => self::normalizePem((string) $data['ca_pem']),
         ];
+        if (!empty($data['tcp_url']) && is_string($data['tcp_url'])) {
+            $out['tcp_url'] = trim($data['tcp_url']);
+        }
+        return $out;
     }
 
     /**

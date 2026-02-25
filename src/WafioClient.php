@@ -48,23 +48,74 @@ final class WafioClient
      * @param array{
      *   host?: string,
      *   port?: int,
-     *   credentials: string|array{client_cert_pem: string, client_key_pem: string, ca_pem?: string}
+     *   credentials: string|array{client_cert_pem: string, client_key_pem: string, ca_pem?: string, tcp_url?: string}
      * } $options
      */
     public function __construct(array $options)
     {
-        $this->host = $options['host'] ?? 'localhost';
-        $this->port = (int) ($options['port'] ?? 9089);
-
         $creds = $options['credentials'];
-        $this->credentials = is_string($creds) ? Credentials::loadFromFile($creds) : [
-            'client_cert_pem' => Credentials::normalizePem($creds['client_cert_pem'] ?? ''),
-            'client_key_pem'  => Credentials::normalizePem($creds['client_key_pem'] ?? ''),
-            'ca_pem'          => Credentials::normalizePem($creds['ca_pem'] ?? ''),
-        ];
+        $resolvedTcpUrl = null;
+        if (is_string($creds)) {
+            $loaded = Credentials::loadFromFile($creds);
+            $resolvedTcpUrl = isset($loaded['tcp_url']) && is_string($loaded['tcp_url']) ? trim($loaded['tcp_url']) : null;
+            $this->credentials = [
+                'client_cert_pem' => $loaded['client_cert_pem'],
+                'client_key_pem'  => $loaded['client_key_pem'],
+                'ca_pem'          => $loaded['ca_pem'],
+            ];
+        } else {
+            $resolvedTcpUrl = isset($creds['tcp_url']) && is_string($creds['tcp_url']) ? trim($creds['tcp_url']) : null;
+            $this->credentials = [
+                'client_cert_pem' => Credentials::normalizePem($creds['client_cert_pem'] ?? ''),
+                'client_key_pem'  => Credentials::normalizePem($creds['client_key_pem'] ?? ''),
+                'ca_pem'          => Credentials::normalizePem($creds['ca_pem'] ?? ''),
+            ];
+        }
+
+        $parsedEndpoint = self::parseTcpEndpoint($resolvedTcpUrl);
+        $this->host = $options['host'] ?? ($parsedEndpoint['host'] ?? 'localhost');
+        $this->port = (int) ($options['port'] ?? ($parsedEndpoint['port'] ?? 9089));
+
         if ($this->credentials['ca_pem'] === '') {
             throw new \InvalidArgumentException('credentials must include ca_pem');
         }
+    }
+
+    /**
+     * @return array{host: string, port: int}|null
+     */
+    private static function parseTcpEndpoint(?string $raw): ?array
+    {
+        if ($raw === null) {
+            return null;
+        }
+        $endpoint = trim($raw);
+        if ($endpoint === '') {
+            return null;
+        }
+        $endpoint = preg_replace('#^(tls|tcp|https?)://#i', '', $endpoint) ?? $endpoint;
+        $slashPos = strpos($endpoint, '/');
+        if ($slashPos !== false) {
+            $endpoint = substr($endpoint, 0, $slashPos);
+        }
+        if (str_starts_with($endpoint, ':')) {
+            $endpoint = 'localhost' . $endpoint;
+        }
+
+        $parsed = parse_url('tcp://' . $endpoint);
+        if (!is_array($parsed)) {
+            return null;
+        }
+
+        $host = isset($parsed['host']) && is_string($parsed['host']) && $parsed['host'] !== ''
+            ? $parsed['host']
+            : 'localhost';
+        $port = isset($parsed['port']) ? (int) $parsed['port'] : 9089;
+        if ($port <= 0 || $port > 65535) {
+            return null;
+        }
+
+        return ['host' => $host, 'port' => $port];
     }
 
     /**

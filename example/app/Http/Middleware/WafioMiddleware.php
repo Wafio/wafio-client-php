@@ -19,8 +19,8 @@ use Wafio\Client\WafioClient;
  * 
  * Env:
  *   WAFIO_CREDENTIALS_FILE  path to mtls-credentials.json
- *   WAFIO_HOST              Wafio server host (default: localhost)
- *   WAFIO_PORT              Wafio port (default: 9089)
+ *   WAFIO_HOST              optional Wafio host override (default: use tcp_url from credentials)
+ *   WAFIO_PORT              optional Wafio port override (default: use tcp_url from credentials)
  *   WAFIO_DISABLED          set 1/true/yes to disable Wafio
  */
 class WafioMiddleware
@@ -90,14 +90,20 @@ class WafioMiddleware
 
         $credentialsFile = $this->findCredentialsFile();
         
-        $host = getenv('WAFIO_HOST') ?: config('services.wafio.host', 'localhost');
-        $port = (int) (getenv('WAFIO_PORT') ?: config('services.wafio.port', 9089));
+        $host = trim((string) (getenv('WAFIO_HOST') ?: config('services.wafio.host', '')));
+        $portRaw = trim((string) (getenv('WAFIO_PORT') ?: config('services.wafio.port', '')));
 
-        self::$client = new WafioClient([
-            'host' => $host,
-            'port' => $port,
+        $options = [
             'credentials' => $credentialsFile,
-        ]);
+        ];
+        if ($host !== '') {
+            $options['host'] = $host;
+        }
+        if ($portRaw !== '' && ctype_digit($portRaw) && (int) $portRaw > 0) {
+            $options['port'] = (int) $portRaw;
+        }
+
+        self::$client = new WafioClient($options);
 
         return self::$client;
     }
