@@ -1,0 +1,18 @@
+{
+  "name": "wafio/client-php",
+  "description": "PHP client for Wafio WAF TCP mTLS (analyze requests, check block). Same API as wafio-client (Node.js).",
+  "type": "library",
+  "license": "MIT",
+  "authors": [],
+  "require": {
+    "php": ">=7.4",
+    "ext-json": "*",
+    "ext-openssl": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Wafio\\Client\\": "src/"
+    }
+  },
+  "keywords": ["waf", "wafio", "mtls", "security"]
+}
