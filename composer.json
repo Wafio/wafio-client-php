@@ -1,9 +1,32 @@
 {
-  "name": "wafio/client-php",
-  "description": "PHP client for Wafio WAF TCP mTLS (analyze requests, check block). Same API as wafio-client (Node.js).",
+  "name": "wafio/wafio-client-php",
+  "description": "PHP client for Wafio WAF TCP mTLS (analyze requests, check block). Feature parity with Node.js and Go clients.",
   "type": "library",
   "license": "MIT",
-  "authors": [],
+  "authors": [
+    {
+      "name": "Wafio",
+      "homepage": "https://wafio.cloud"
+    }
+  ],
+  "keywords": [
+    "waf",
+    "wafio",
+    "mtls",
+    "security",
+    "firewall",
+    "web-application-firewall",
+    "sqli",
+    "xss",
+    "owasp",
+    "tcp",
+    "tls"
+  ],
+  "homepage": "https://github.com/Wafio/wafio-client-php",
+  "support": {
+    "issues": "https://github.com/Wafio/wafio-client-php/issues",
+    "source": "https://github.com/Wafio/wafio-client-php"
+  },
   "require": {
     "php": ">=7.4",
     "ext-json": "*",
@@ -14,5 +37,5 @@
       "Wafio\\Client\\": "src/"
     }
   },
-  "keywords": ["waf", "wafio", "mtls", "security"]
+  "minimum-stability": "stable"
 }
